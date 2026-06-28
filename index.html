@@ -1167,8 +1167,9 @@ function doPrint(){
   pw.focus();
 
   // Auto-save to Google Sheet
+  const outstandingAmt = Math.max(0, grandTotal - advanceAmt);
   saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
-              grandTotal, 0, 0, payStatus, allDoors);
+              grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
 }
 
 // ════════════════════════════════════════════════════════
