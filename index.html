@@ -854,9 +854,11 @@ function doPrint(){
     }
 
     const pb = pi<pages.length-1 ? 'page-break-after:always;break-after:page;' : '';
-    // Footer on ALL pages, pinned to bottom using flex spacer
-    const footerHTML = `
-  <div class="footer-spacer"></div>
+    body+=`<div class="pg ${pg.first?'pg-first':''}" style="${pb}">${pg.first?custHTML:''}${rowsWrapped}</div>`;
+  });
+
+  // Single fixed footer — appears on every printed page automatically
+  body += `
   <div class="footer-wrap">
     <div class="footer-line"></div>
     <div class="footer-inner">
@@ -869,13 +871,11 @@ function doPrint(){
         <div class="footer-note">All measurements are in inches unless otherwise stated.</div>
       </div>
       <div class="footer-right">
-        <div class="footer-page">Page ${pi+1} of ${pages.length}</div>
-        <div class="footer-generated">Generated: ${new Date().toLocaleDateString('en-GB')}</div>
+        <div class="footer-page">Page 1 of \${pages.length}</div>
+        <div class="footer-generated">Generated: \${new Date().toLocaleDateString('en-GB')}</div>
       </div>
     </div>
   </div>`;
-    body+=`<div class="pg ${pg.first?'pg-first':''}" style="${pb}">${pg.first?custHTML:''}${rowsWrapped}${footerHTML}</div>`;
-  });
 
   /* ── print CSS ── */
   const css=`
@@ -1120,8 +1120,14 @@ function doPrint(){
   .dk-val{color:#333!important}
 
 
-  /* ── FOOTER ── */
-  .footer-wrap{width:200mm;flex-shrink:0}
+  /* ── FOOTER ── fixed so it appears on every printed page ── */
+  .footer-spacer{display:none!important}
+  .footer-wrap{
+    position:fixed;bottom:0;left:0;
+    width:200mm;
+    background:white;
+    z-index:9998;
+  }
   .footer-line{
     height:3px;width:200mm;
     background:linear-gradient(90deg,#1a2340,#c8a000,#cc0000,#c8a000,#1a2340);
@@ -1139,6 +1145,8 @@ function doPrint(){
   .footer-right{display:flex;flex-direction:column;gap:1mm;align-items:flex-end;min-width:40mm}
   .footer-page{font-size:10px;font-weight:700;color:#1a2340}
   .footer-generated{font-size:8px;color:#aaa}
+  /* reserve space at bottom of each page so content doesn't hide behind footer */
+  body{padding-bottom:14mm!important}
   `;
 
   const pw=window.open('','_blank','width=900,height=700');
