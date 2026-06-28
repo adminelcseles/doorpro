@@ -346,7 +346,24 @@ body{font-family:Arial,sans-serif;background:#eef2f7;min-height:100vh;padding:14
 
 <script>
 let doors=[],nextId=1,dragSrc=null;
-const _savedOrders=new Set(); // track which orders already saved this session
+// track which orders already saved (persisted across refreshes)
+function _isAlreadySaved(orderNum){
+  try{
+    const saved = JSON.parse(localStorage.getItem('elc_saved_orders')||'[]');
+    return saved.includes(orderNum);
+  }catch(e){return false;}
+}
+function _markSaved(orderNum){
+  try{
+    const saved = JSON.parse(localStorage.getItem('elc_saved_orders')||'[]');
+    if(!saved.includes(orderNum)){
+      saved.push(orderNum);
+      // keep only last 50 orders to avoid bloat
+      if(saved.length > 50) saved.splice(0, saved.length - 50);
+      localStorage.setItem('elc_saved_orders', JSON.stringify(saved));
+    }
+  }catch(e){}
+}
 
 window.addEventListener('load', function(){
   resetAll();
@@ -1169,11 +1186,10 @@ function doPrint(){
 
   // Auto-save to Google Sheet — only once per order per session
   const outstandingAmt = Math.max(0, grandTotal - advanceAmt);
-  if(!_savedOrders.has(orderNum)){
-    _savedOrders.add(orderNum);
-    saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
-                grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
-  }
+  // Always update sheet with latest data (Apps Script upserts by Order No.)
+  _markSaved(orderNum);
+  saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
+              grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
 }
 
 // ════════════════════════════════════════════════════════
