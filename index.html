@@ -346,22 +346,29 @@ body{font-family:Arial,sans-serif;background:#eef2f7;min-height:100vh;padding:14
 
 <script>
 let doors=[],nextId=1,dragSrc=null;
-// track which orders already saved (persisted across refreshes)
-function _isAlreadySaved(orderNum){
+// Save lock: prevents duplicate saves per orderNum
+// Uses both in-memory map (fast) + localStorage (survives refresh)
+const _saveLock = {}; // in-memory: orderNum -> timestamp
+function _canSave(orderNum){
+  const now = Date.now();
+  // Check in-memory first (catches rapid double-clicks)
+  if(_saveLock[orderNum] && (now - _saveLock[orderNum]) < 120000) return false;
+  // Check localStorage (catches post-refresh duplicates)
   try{
-    const saved = JSON.parse(localStorage.getItem('elc_saved_orders')||'[]');
-    return saved.includes(orderNum);
-  }catch(e){return false;}
+    const map = JSON.parse(localStorage.getItem('elc_save_times')||'{}');
+    if(map[orderNum] && (now - map[orderNum]) < 120000) return false;
+  }catch(e){}
+  return true;
 }
 function _markSaved(orderNum){
+  const now = Date.now();
+  _saveLock[orderNum] = now;
   try{
-    const saved = JSON.parse(localStorage.getItem('elc_saved_orders')||'[]');
-    if(!saved.includes(orderNum)){
-      saved.push(orderNum);
-      // keep only last 50 orders to avoid bloat
-      if(saved.length > 50) saved.splice(0, saved.length - 50);
-      localStorage.setItem('elc_saved_orders', JSON.stringify(saved));
-    }
+    const map = JSON.parse(localStorage.getItem('elc_save_times')||'{}');
+    map[orderNum] = now;
+    const keys = Object.keys(map);
+    if(keys.length > 100) keys.sort((a,b)=>map[a]-map[b]).slice(0,keys.length-100).forEach(k=>delete map[k]);
+    localStorage.setItem('elc_save_times', JSON.stringify(map));
   }catch(e){}
 }
 
@@ -1186,10 +1193,12 @@ function doPrint(){
 
   // Auto-save to Google Sheet — only once per order per session
   const outstandingAmt = Math.max(0, grandTotal - advanceAmt);
-  // Always update sheet with latest data (Apps Script upserts by Order No.)
-  _markSaved(orderNum);
-  saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
-              grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
+  // Save to sheet — throttled to once per 15s per order to prevent duplicates
+  if(_canSave(orderNum)){
+    _markSaved(orderNum);
+    saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
+                grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -1197,9 +1206,12 @@ function doPrint(){
 // ════════════════════════════════════════════════════════
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS79RZHsnYJL4XO507RHeP0vZ3qUro9V3VWm-0D50kKbhHxHI2MDDJsNMur4oSIz8y/exec';
 
+const _pendingSaves = new Set(); // prevent concurrent network requests for same order
 function saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
                      totalAmount, advanceAmt, outstanding, payStatus, allDoors) {
   if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+  if (_pendingSaves.has(orderNum)) { console.log('Save in progress, skipping:', orderNum); return; }
+  _pendingSaves.add(orderNum);
 
   const payload = {
     custName, custWhatsapp, custAddress,
@@ -1232,7 +1244,9 @@ function saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
     method: 'POST', mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  }).catch(err => console.error('Sheet save failed:', err));
+  })
+  .then(() => { setTimeout(() => _pendingSaves.delete(orderNum), 5000); })
+  .catch(err => { _pendingSaves.delete(orderNum); console.error('Sheet save failed:', err); });
 }
 
 function updateSummary(){
