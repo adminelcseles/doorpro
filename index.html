@@ -777,36 +777,36 @@ function doPrint(){
     </div>
     <div class="info-row amounts-row">
       <!-- Door type sub-totals row -->
-      ${d1Sum > 0 ? `<div class="amount-box" style="border-color:#1a1aff44;background:#f0f4ff;flex:none;min-width:0;">
-        <div class="amt-label" style="color:#1a1aff;">D 01) Total</div>
-        <div class="amt-value" style="color:#1a1aff;font-size:14px;">${fmtAmt(d1Sum)}</div>
+      ${d1Sum > 0 ? `<div class="amount-box" style="border-color:#1a1aff44;background:#f0f4ff;flex:1;min-width:0;padding:2mm 3mm;">
+        <div class="amt-label" style="color:#1a1aff;font-size:9px;">D 01) Total</div>
+        <div class="amt-value" style="color:#1a1aff;font-size:12px;white-space:nowrap;">${fmtAmt(d1Sum)}</div>
       </div>` : ''}
-      ${d2Sum > 0 ? `<div class="amount-box" style="border-color:#cc000044;background:#fff5f5;flex:none;min-width:0;">
-        <div class="amt-label" style="color:#cc0000;">D 02) Total</div>
-        <div class="amt-value" style="color:#cc0000;font-size:14px;">${fmtAmt(d2Sum)}</div>
+      ${d2Sum > 0 ? `<div class="amount-box" style="border-color:#cc000044;background:#fff5f5;flex:1;min-width:0;padding:2mm 3mm;">
+        <div class="amt-label" style="color:#cc0000;font-size:9px;">D 02) Total</div>
+        <div class="amt-value" style="color:#cc0000;font-size:12px;white-space:nowrap;">${fmtAmt(d2Sum)}</div>
       </div>` : ''}
-      ${wgSum > 0 ? `<div class="amount-box" style="border-color:#c8a00044;background:#fffbf0;flex:none;min-width:0;">
-        <div class="amt-label" style="color:#c8a000;">WG Total</div>
-        <div class="amt-value" style="color:#c8a000;font-size:14px;">${fmtAmt(wgSum)}</div>
+      ${wgSum > 0 ? `<div class="amount-box" style="border-color:#c8a00044;background:#fffbf0;flex:1;min-width:0;padding:2mm 3mm;">
+        <div class="amt-label" style="color:#c8a000;font-size:9px;">WG Total</div>
+        <div class="amt-value" style="color:#c8a000;font-size:12px;white-space:nowrap;">${fmtAmt(wgSum)}</div>
       </div>` : ''}
-      ${additionalAmt > 0 ? `<div class="amount-box" style="border-color:#7a3dcc;background:#f8f0ff;flex:none;min-width:0;">
-        <div class="amt-label" style="color:#7a3dcc;">Additional</div>
-        <div class="amt-value" style="color:#7a3dcc;font-size:14px;">${fmtAmt(additionalAmt)}</div>
+      ${additionalAmt > 0 ? `<div class="amount-box" style="border-color:#7a3dcc;background:#f8f0ff;flex:1;min-width:0;padding:2mm 3mm;">
+        <div class="amt-label" style="color:#7a3dcc;font-size:9px;">Additional</div>
+        <div class="amt-value" style="color:#7a3dcc;font-size:12px;white-space:nowrap;">${fmtAmt(additionalAmt)}</div>
       </div>` : ''}
-      <div class="amount-box" style="border-color:#1a2340;background:#1a2340;flex:1;">
+      <div class="amount-box" style="border-color:#1a2340;background:#1a2340;flex:1;min-width:0;">
         <div class="amt-label" style="color:#f5d800;letter-spacing:1px;">TOTAL AMOUNT</div>
         <div class="amt-value" style="color:#f5d800;font-size:20px;">${fmtAmt(grandTotal)}</div>
         ${advanceAmt > 0 ? `<div style="margin-top:3px;font-size:9px;color:#aab8cc;font-weight:600;letter-spacing:0.5px;">${payStatus}</div>` : ''}
       </div>
       ${advanceAmt > 0 ? `
-      <div style="display:flex;flex-direction:column;gap:3mm;flex:none;">
-        <div style="border:2px solid #007a3d;background:linear-gradient(135deg,#f0faf5,#e0f5ea);border-radius:6px;padding:3mm 4mm;min-width:34mm;">
-          <div style="font-size:9px;font-weight:800;color:#007a3d;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:1mm;">✓ ADVANCE PAID</div>
-          <div style="font-size:15px;font-weight:900;color:#007a3d;">${fmtAmt(advanceAmt)}</div>
+      <div style="display:flex;flex-direction:column;gap:2mm;flex:0 0 auto;min-width:28mm;max-width:34mm;">
+        <div style="border:2px solid #007a3d;background:linear-gradient(135deg,#f0faf5,#e0f5ea);border-radius:6px;padding:2mm 3mm;flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:7px;font-weight:800;color:#007a3d;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:1mm;">✓ ADVANCE PAID</div>
+          <div style="font-size:12px;font-weight:900;color:#007a3d;white-space:nowrap;">${fmtAmt(advanceAmt)}</div>
         </div>
-        <div style="border:2px solid #cc0000;background:linear-gradient(135deg,#fff5f5,#ffe8e8);border-radius:6px;padding:3mm 4mm;min-width:34mm;">
-          <div style="font-size:9px;font-weight:800;color:#cc0000;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:1mm;">⚡ OUTSTANDING</div>
-          <div style="font-size:15px;font-weight:900;color:#cc0000;">${fmtAmt(Math.max(0, grandTotal - advanceAmt))}</div>
+        <div style="border:2px solid #cc0000;background:linear-gradient(135deg,#fff5f5,#ffe8e8);border-radius:6px;padding:2mm 3mm;flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:7px;font-weight:800;color:#cc0000;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:1mm;">⚡ OUTSTANDING</div>
+          <div style="font-size:12px;font-weight:900;color:#cc0000;white-space:nowrap;">${fmtAmt(Math.max(0, grandTotal - advanceAmt))}</div>
         </div>
       </div>` : ''}
     </div>
@@ -924,7 +924,7 @@ function doPrint(){
 
   .info-wrap{
     background:#f7f8fa;border-left:1px solid #dde;border-right:1px solid #dde;
-    padding:4mm 7mm;width:200mm;box-sizing:border-box;
+    padding:3mm 5mm;width:200mm;box-sizing:border-box;overflow:visible;
   }
   .info-row{display:flex;gap:4mm}
   .info-cell{display:flex;flex-direction:column;gap:1mm;min-width:50mm}
@@ -934,7 +934,7 @@ function doPrint(){
   .notes-val{font-size:17px;font-weight:400;color:#444;white-space:pre-wrap;min-height:10mm;line-height:1.6}
 
   /* amount boxes row */
-  .amounts-row{display:flex;gap:3mm;margin-top:2mm;align-items:stretch}
+  .amounts-row{display:flex;gap:3mm;margin-top:2mm;align-items:stretch;flex-wrap:wrap}
   .amount-box{
     flex:1;border:2px solid #1a2340;border-radius:6px;
     padding:3mm 4mm;display:flex;flex-direction:column;gap:1mm;
