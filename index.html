@@ -346,6 +346,7 @@ body{font-family:Arial,sans-serif;background:#eef2f7;min-height:100vh;padding:14
 
 <script>
 let doors=[],nextId=1,dragSrc=null;
+const _savedOrders=new Set(); // track which orders already saved this session
 
 window.addEventListener('load', function(){
   resetAll();
@@ -1166,10 +1167,13 @@ function doPrint(){
   pw.document.close();
   pw.focus();
 
-  // Auto-save to Google Sheet
+  // Auto-save to Google Sheet — only once per order per session
   const outstandingAmt = Math.max(0, grandTotal - advanceAmt);
-  saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
-              grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
+  if(!_savedOrders.has(orderNum)){
+    _savedOrders.add(orderNum);
+    saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
+                grandTotal, advanceAmt, outstandingAmt, payStatus, allDoors);
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -1190,14 +1194,19 @@ function saveToSheet(custName, custWhatsapp, custAddress, orderNum, orderDate,
     doors: allDoors.map((d, i) => {
       const base = { doorIndex: i + 1, type: d.type };
       if (d.type === 'wg') {
-        return { ...base, label: 'Wicket Gate', totalH: d.h, totalW: d.w };
+        const sqFt = d.h && d.w ? Math.round(d.h * d.w / 144 * 100) / 100 : '';
+        return { ...base, label: 'Wicket Gate', totalH: d.h, totalW: d.w,
+                 sqFt: sqFt, totalCost: d.totalCost || 0 };
       } else {
         const th = d.bh + d.eh, tw = d.bw + d.ew;
+        const sqFt = th && tw ? Math.round(th * tw / 144 * 100) / 100 : '';
         return { ...base,
           label: d.type === 't1' ? 'D 01)' : 'D 02)',
           baseH: d.bh, extraH: d.eh, totalH: th,
           baseW: d.bw, extraW: d.ew, totalW: tw,
-          motor: d.motor || '', combo: d.combo || ''
+          sqFt: sqFt,
+          motor: d.motor || '', motorType: d.motorType || '', motorPrice: d.motorPrice || 0,
+          combo: d.combo || '', totalCost: d.totalCost || 0
         };
       }
     })
